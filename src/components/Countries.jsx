@@ -5,19 +5,23 @@ import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Row from 'react-bootstrap/Row';
+import Spinner from 'react-bootstrap/Spinner';
 import { useDispatch, useSelector } from 'react-redux';
 import { LinkContainer } from 'react-router-bootstrap';
 import { initializeCountries } from '../features/countries/countriesSlice';
+import { addFavorites } from '../features/countries/favoritesSlice';
+
 
 const Countries = () => {
   const dispatch = useDispatch();
 
   const CountriesList = useSelector((state) => state.countries.countries)
+  const loading = useSelector((state) => state.countries.isLoading)
 
   const [search, setSearch] = useState('')
 
   // console.log("Search: ", search)
-  console.log("Country list: ", CountriesList)
+  console.log("loading ", loading)
 
 
   useEffect(() => {
@@ -29,6 +33,15 @@ const Countries = () => {
     name: {
       common: 'Example Country'
     }
+  }
+
+  const showSpinner = () => {
+    if (loading) {
+      return <Spinner animation="border" variant="success" />
+    } else {
+
+    }
+
   }
 
   return (
@@ -48,12 +61,21 @@ const Countries = () => {
         </Col>
       </Row>
       <Row xs={2} md={3} lg={4} className=" g-3">
-        {CountriesList.map((country) => <Col className="mt-5">
+
+        {loading ? <Spinner animation="border" variant="success" /> : ""}
+
+
+        {CountriesList.filter((c) => {
+          return c.name.official.toLowerCase().includes(search.toLowerCase())
+        }).map((country, i) => <Col key={i} className="mt-5">
           <LinkContainer
             to={`/countries/${country.name.common}`}
             state={{ country: country }}
           >
             <Card className="h-100">
+              <i className='bi bi-heart-fill text-danger m-1 p-1' onClick={() => dispatch(addFavorites(country.name.common))} />
+              <Card.Img variant
+                ="top" src={country.flags.png} />
               <Card.Body className="d-flex flex-column">
                 <Card.Title>{country.name.common}</Card.Title>
                 <Card.Subtitle className="mb-5 text-muted">
@@ -64,10 +86,10 @@ const Countries = () => {
                   className="flex-grow-1 justify-content-end"
                 >
                   <ListGroup.Item>
-                    <i className="bi bi-translate me-2">{Object.values(country.languages || {}).join(', ')}</i>
+                    <i className="bi bi-translate me-2">   {Object.values(country.languages || {}).join(', ')}</i>
                   </ListGroup.Item>
                   <ListGroup.Item>
-                    <i className="bi bi-cash-coin me-2">{Object.values(country.currencies || {}).map((currency) => currency.name).join(', ')}</i>
+                    <i className="bi bi-cash-coin me-2">   {Object.values(country.currencies || {}).map((currency) => currency.name).join(', ')}</i>
                   </ListGroup.Item>
 
                   <ListGroup.Item>
