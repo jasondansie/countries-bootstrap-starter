@@ -7,6 +7,8 @@ import Layout from './pages/Layout';
 
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import Favorites from './components/Favorites';
+import Register from './components/Register';
+import Login from './components/Login';
 
 const App = () => {
   return (
@@ -17,6 +19,8 @@ const App = () => {
           <Route path="/countries" element={<Countries />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/countries/:single" element={<CountriesSingle />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
         </Route>
       </Routes>
     </BrowserRouter>
