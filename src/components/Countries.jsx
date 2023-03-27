@@ -16,7 +16,13 @@ const Countries = () => {
   const dispatch = useDispatch();
 
   const CountriesList = useSelector((state) => state.countries.countries)
+  const favoritesList = useSelector((state) => state.favorites.favorites)
   const loading = useSelector((state) => state.countries.isLoading)
+
+  // const [favoritesList, setFavoritesList] = useState([]);
+
+
+
 
   const [search, setSearch] = useState('')
 
@@ -26,8 +32,10 @@ const Countries = () => {
 
   useEffect(() => {
     dispatch(initializeCountries())
+    // setFavoritesList(localStorage.getItem('Favorites'));
   }, [dispatch])
 
+  console.log("favorites: ", favoritesList);
   // We will be replacing this with data from our API.
   const country = {
     name: {
@@ -38,10 +46,29 @@ const Countries = () => {
   const showSpinner = () => {
     if (loading) {
       return <Spinner animation="border" variant="success" />
-    } else {
+    } else { }
+  }
 
-    }
+  const isFavorite = (country) => {
+    console.log("country: ", country);
+    console.log("favoritelist: ", favoritesList);
 
+    // favoritesList.forEach(foundCountry => {
+    //   if (favoritesList == country) {
+    //     console.log("country: ", country);
+    //     return true;
+    //   }
+    //   return false;
+    // });
+    let isfavorite = false;
+    favoritesList.find((foundCountry) => {
+      if (favoritesList == country) {
+        console.log("country: ", country);
+        console.log("onfavorite: true ");
+        isfavorite = true;
+      }
+      return isfavorite;
+    })
   }
 
   return (
@@ -62,7 +89,7 @@ const Countries = () => {
       </Row>
       <Row xs={2} md={3} lg={4} className=" g-3">
 
-        {loading ? <Spinner animation="border" variant="success" /> : ""}
+        {/* {loading ? <Spinner animation="border" variant="success" /> : ""} */}
 
 
         {CountriesList.filter((c) => {
@@ -73,7 +100,11 @@ const Countries = () => {
             state={{ country: country }}
           >
             <Card className="h-100">
-              <i className='bi bi-heart-fill text-danger m-1 p-1' onClick={() => dispatch(addFavorites(country.name.common))} />
+              {isFavorite(country.name.common) ?
+                <i className='bi bi-heart m-1 p-1' onClick={() => dispatch(addFavorites(country.name.common))} />
+                :
+                <i className='bi bi-bell m-1 p-1' onClick={() => dispatch(addFavorites(country.name.common))} />
+              }
               <Card.Img variant
                 ="top" src={country.flags.png} />
               <Card.Body className="d-flex flex-column">
