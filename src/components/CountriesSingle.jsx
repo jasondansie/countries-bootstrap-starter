@@ -12,6 +12,7 @@ const CountriesSingle = () => {
   const country = location.state.country;
 
 
+  console.log("key: ",process.env.REACT_APP_OPENWEATHER_API_KEY );
 
   useEffect(() => {
     axios.get(
