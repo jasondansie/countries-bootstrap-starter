@@ -16,7 +16,6 @@ export const countriesSlice = createSlice({
         isLoading(state, action){
             state.isLoading = action.payload
         }
-
     }   
 })
 

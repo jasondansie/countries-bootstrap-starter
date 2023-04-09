@@ -5,48 +5,54 @@ import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Row from 'react-bootstrap/Row';
-import Spinner from 'react-bootstrap/Spinner';
 import Pagination from 'react-bootstrap/Pagination'
 import { useDispatch, useSelector } from 'react-redux';
 import { LinkContainer } from 'react-router-bootstrap';
 import { initializeCountries } from '../features/countries/countriesSlice';
 import { addFavorites } from '../features/countries/favoritesSlice';
+import { setCurrentPage, setItemsPerPage, setNumberOfPages } from '../features/countries/pagenationSlice'
 
 
 const Countries = () => {
   const dispatch = useDispatch();
 
-  const CountriesList = useSelector((state) => state.countries.countries)
-  const favoritesList = useSelector((state) => state.favorites.favorites)
-  const loading = useSelector((state) => state.countries.isLoading)
+  const CountriesList = useSelector((state) => state.countries.countries);
+  const favoritesList = useSelector((state) => state.favorites.favorites);
+  const loading = useSelector((state) => state.countries.isLoading);
+
+  const currentPage = useSelector((state) => state.pagenation.currentPage);
+  const itemsPerPage = useSelector((state) => state.pagenation.itemsPerPage);
+  const numberOfPages = useSelector((state) => state.pagenation.currentPage);
+
+  dispatch(setItemsPerPage(10));
+  dispatch(setNumberOfPages(Math.ceil(CountriesList.length / itemsPerPage)));
+
+  const pagedCountryList = getItemsForPage(currentPage);
+
 
 
   const [search, setSearch] = useState('')
+
 
   // console.log("Search: ", search)
   console.log("loading ", loading)
 
   useEffect(() => {
-    dispatch(initializeCountries())
-    
-  }, [dispatch])
+    dispatch(initializeCountries());
+    dispatch(setItemsPerPage(10));
 
-  // We will be replacing this with data from our API.
-  const country = {
-    name: {
-      common: 'Example Country'
-    }
-  }
+  }, [dispatch])
 
   const doPagination = (e) => {
     console.log("clicked:", e.target.name);
+    dispatch(setCurrentPage(e.target.name));
+
   }
 
-
-  const showSpinner = () => {
-    if (loading) {
-      return <Spinner animation="border" variant="success" />
-    } else { }
+  function getItemsForPage(pageNum) {
+    const startIndex = (pageNum - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return CountriesList.slice(startIndex, endIndex);
   }
 
   const isFavorite = (country) => {
@@ -55,7 +61,7 @@ const Countries = () => {
     favoritesList.find((foundCountry) => {
       if (foundCountry === country) {
         isfavorite = true;
-      }  
+      }
     })
 
     return isfavorite;
@@ -82,7 +88,7 @@ const Countries = () => {
         {/* {loading ? <Spinner animation="border" variant="success" /> : ""} */}
 
 
-        {CountriesList.filter((c) => {
+        {pagedCountryList.filter((c) => {
           return c.name.official.toLowerCase().includes(search.toLowerCase())
         }).map((country, i) => <Col key={i} className="mt-5">
           <LinkContainer
@@ -122,19 +128,18 @@ const Countries = () => {
           </LinkContainer>
         </Col>)}
       </Row>
-      <Row>   
+      <Row>
         <Col className="mt-5 d-flex justify-content-center">
           <Pagination>
             <Pagination.First name="first" onClick={(e) => doPagination(e)} />
             <Pagination.Prev name="prev" onClick={(e) => doPagination(e)} />
-            <Pagination.Item name="item1" onClick={(e) => doPagination(e)}>{1}</Pagination.Item>
-            <Pagination.Item name="item2" onClick={(e) => doPagination(e)}>{2}</Pagination.Item>
-            <Pagination.Item name="item3" onClick={(e) => doPagination(e)}>{3}</Pagination.Item>
-            <Pagination.Item name="item4" onClick={(e) => doPagination(e)}>{4}</Pagination.Item>
-            <Pagination.Item name="item5" onClick={(e) => doPagination(e)}>{5}</Pagination.Item>
-            <Pagination.Ellipsis name="ellipsis" onClick={(e) => doPagination(e)} />
-            <Pagination.Next name="next" onClick={(e) => doPagination(e)} />
-            <Pagination.Last name="last" onClick={(e) => doPagination(e)} />
+            <Pagination.Item name="1" onClick={(e) => doPagination(e)}>{1}</Pagination.Item>
+            <Pagination.Item name="2" onClick={(e) => doPagination(e)}>{2}</Pagination.Item>
+            <Pagination.Item name="3" onClick={(e) => doPagination(e)}>{3}</Pagination.Item>
+            <Pagination.Item name="4" onClick={(e) => doPagination(e)}>{4}</Pagination.Item>
+            <Pagination.Item name="5" onClick={(e) => doPagination(e)}>{5}</Pagination.Item>
+            <Pagination.Next name="nextPage" onClick={(e) => doPagination(e)} />
+            <Pagination.Last name="lastPage" onClick={(e) => doPagination(e)} />
           </Pagination>
         </Col>
       </Row>
