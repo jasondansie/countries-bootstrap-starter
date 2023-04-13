@@ -22,7 +22,6 @@ const Countries = () => {
 
   const currentPage = useSelector((state) => state.pagenation.currentPage);
   const itemsPerPage = useSelector((state) => state.pagenation.itemsPerPage);
-  const numberOfPages = useSelector((state) => state.pagenation.currentPage);
 
   dispatch(setItemsPerPage(10));
   dispatch(setNumberOfPages(Math.ceil(CountriesList.length / itemsPerPage)));
