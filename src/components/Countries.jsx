@@ -22,30 +22,27 @@ const Countries = () => {
 
   const currentPage = useSelector((state) => state.pagenation.currentPage);
   const itemsPerPage = useSelector((state) => state.pagenation.itemsPerPage);
+  const numberOfPages = useSelector((state) => state.pagenation.numberOfPages);
 
   dispatch(setItemsPerPage(10));
   dispatch(setNumberOfPages(Math.ceil(CountriesList.length / itemsPerPage)));
+  const [search, setSearch] = useState('')
 
   const pagedCountryList = getItemsForPage(currentPage);
 
-
-
-  const [search, setSearch] = useState('')
-
-
-  // console.log("Search: ", search)
-  console.log("loading ", loading)
+  console.log("numberOfPages", numberOfPages);
 
   useEffect(() => {
     dispatch(initializeCountries());
     dispatch(setItemsPerPage(10));
-
   }, [dispatch])
 
-  const doPagination = (e) => {
-    console.log("clicked:", e.target.name);
-    dispatch(setCurrentPage(e.target.name));
+  useEffect(() => {
+    dispatch(setNumberOfPages(Math.ceil(CountriesList.length / itemsPerPage)));
+  }, [CountriesList.length, itemsPerPage, dispatch]);
 
+  const doPagination = (pageNumber) => {
+    dispatch(setCurrentPage(pageNumber));
   }
 
   function getItemsForPage(pageNum) {
@@ -55,16 +52,43 @@ const Countries = () => {
   }
 
   const isFavorite = (country) => {
-
-    let isfavorite = false;
-    favoritesList.find((foundCountry) => {
-      if (foundCountry === country) {
-        isfavorite = true;
-      }
-    })
-
-    return isfavorite;
+    return favoritesList.includes(country);
   }
+
+  let paginationItems = [];
+
+  // Show only 5 items, the current page and the 2 previous and next pages
+  const start = Math.max(currentPage - 2, 1);
+  const end = Math.min(start + 4, numberOfPages);
+
+  paginationItems.push(
+    <Pagination.Prev
+      key="prev"
+      disabled={currentPage === 1}
+      onClick={() => doPagination(currentPage - 5)}
+    />
+  );
+
+  for (let pageNumber = start; pageNumber <= end; pageNumber++) {
+    paginationItems.push(
+      <Pagination.Item
+        key={pageNumber}
+        active={pageNumber === currentPage}
+        onClick={() => doPagination(pageNumber)}
+      >
+        {pageNumber}
+      </Pagination.Item>
+    );
+  }
+
+  paginationItems.push(
+    <Pagination.Next
+      key="next"
+      disabled={currentPage === numberOfPages}
+      onClick={() => doPagination(currentPage + 5)}
+    />
+  );
+
 
   return (
     <Container fluid>
@@ -130,19 +154,13 @@ const Countries = () => {
       <Row>
         <Col className="mt-5 d-flex justify-content-center">
           <Pagination>
-            <Pagination.First name="first" onClick={(e) => doPagination(e)} />
-            <Pagination.Prev name="prev" onClick={(e) => doPagination(e)} />
-            <Pagination.Item name="1" onClick={(e) => doPagination(e)}>{1}</Pagination.Item>
-            <Pagination.Item name="2" onClick={(e) => doPagination(e)}>{2}</Pagination.Item>
-            <Pagination.Item name="3" onClick={(e) => doPagination(e)}>{3}</Pagination.Item>
-            <Pagination.Item name="4" onClick={(e) => doPagination(e)}>{4}</Pagination.Item>
-            <Pagination.Item name="5" onClick={(e) => doPagination(e)}>{5}</Pagination.Item>
-            <Pagination.Next name="nextPage" onClick={(e) => doPagination(e)} />
-            <Pagination.Last name="lastPage" onClick={(e) => doPagination(e)} />
+            <Pagination.First onClick={() => doPagination(1)} />
+            {paginationItems}
+            <Pagination.Last onClick={() => doPagination(numberOfPages)} />
           </Pagination>
         </Col>
       </Row>
-    </Container>
+    </Container >
   );
 };
 
