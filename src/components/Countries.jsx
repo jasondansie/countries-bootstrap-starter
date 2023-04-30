@@ -30,7 +30,7 @@ const Countries = () => {
 
   const pagedCountryList = getItemsForPage(currentPage);
 
-  console.log("numberOfPages", numberOfPages);
+  // console.log("numberOfPages", numberOfPages);
 
   useEffect(() => {
     dispatch(initializeCountries());
