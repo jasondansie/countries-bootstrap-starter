@@ -9,7 +9,7 @@ function Register() {
 const {email, setEmail } = useState("");
 const {password, setPassword } = useState("");
 const {name, setName } = useState("");
-const {user, loading, error } = useState(auth);
+const {user, loading } = useState(auth);
 const navigate = useNavigate();
 
 const register = () => {

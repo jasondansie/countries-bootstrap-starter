@@ -59,7 +59,11 @@ const Favorites = () => {
 
 
                 {CountriesList.filter((c) => {
-                    return c.name.official.toLowerCase().includes(search.toLowerCase())
+                    const query = search.toLowerCase();
+                    return (
+                        c.name.common.toLowerCase().includes(query) ||
+                        c.name.official.toLowerCase().includes(query)
+                    );
                 }).map((country, i) => <Col key={i} className="mt-5">
                     <LinkContainer
                         to={`/countries/${country.name.common}`}

@@ -21,9 +21,18 @@ export const countriesSlice = createSlice({
 
 export const initializeCountries = () => {
     return async (dispatch) => {
-        const countries = await countryService.getall();
-        dispatch(getCountries(countries));
-        dispatch(isLoading(false))
+        dispatch(isLoading(true));
+
+        try {
+            const countries = await countryService.getall();
+            console.log('Countries loaded:', countries.length);
+            dispatch(getCountries(countries));
+        } catch (error) {
+            console.error('Failed to load countries:', error);
+            dispatch(getCountries([]));
+        } finally {
+            dispatch(isLoading(false));
+        }
     }
 }
 

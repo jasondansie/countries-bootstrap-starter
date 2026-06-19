@@ -11,6 +11,7 @@ import { LinkContainer } from 'react-router-bootstrap';
 import { initializeCountries } from '../features/countries/countriesSlice';
 import { addFavorites } from '../features/countries/favoritesSlice';
 import { setCurrentPage, setItemsPerPage, setNumberOfPages } from '../features/countries/pagenationSlice'
+import countryService from '../services/countries';
 
 
 const Countries = () => {
@@ -18,19 +19,16 @@ const Countries = () => {
 
   const CountriesList = useSelector((state) => state.countries.countries);
   const favoritesList = useSelector((state) => state.favorites.favorites);
-  const loading = useSelector((state) => state.countries.isLoading);
 
   const currentPage = useSelector((state) => state.pagenation.currentPage);
   const itemsPerPage = useSelector((state) => state.pagenation.itemsPerPage);
   const numberOfPages = useSelector((state) => state.pagenation.numberOfPages);
 
-  dispatch(setItemsPerPage(10));
-  dispatch(setNumberOfPages(Math.ceil(CountriesList.length / itemsPerPage)));
   const [search, setSearch] = useState('')
+  const [searchResults, setSearchResults] = useState([])
 
-  const pagedCountryList = getItemsForPage(currentPage);
-
-  // console.log("numberOfPages", numberOfPages);
+  const displayCountries = search.trim() ? searchResults : CountriesList;
+  const pagedCountryList = getItemsForPage(currentPage, displayCountries);
 
   useEffect(() => {
     dispatch(initializeCountries());
@@ -38,17 +36,56 @@ const Countries = () => {
   }, [dispatch])
 
   useEffect(() => {
-    dispatch(setNumberOfPages(Math.ceil(CountriesList.length / itemsPerPage)));
-  }, [CountriesList.length, itemsPerPage, dispatch]);
+    dispatch(setNumberOfPages(Math.ceil(displayCountries.length / itemsPerPage) || 1));
+  }, [displayCountries.length, itemsPerPage, dispatch]);
+
+  useEffect(() => {
+    dispatch(setCurrentPage(1));
+  }, [search, dispatch]);
+
+  useEffect(() => {
+    if (!search.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const results = await countryService.search(search);
+
+        if (cancelled) {
+          return;
+        }
+
+        console.log('Country search:', {
+          query: search,
+          matchCount: results.length,
+          results,
+        });
+        setSearchResults(results);
+      } catch (error) {
+        console.error('Country search failed:', error);
+        if (!cancelled) {
+          setSearchResults([]);
+        }
+      }
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [search]);
 
   const doPagination = (pageNumber) => {
     dispatch(setCurrentPage(pageNumber));
   }
 
-  function getItemsForPage(pageNum) {
+  function getItemsForPage(pageNum, list) {
     const startIndex = (pageNum - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return CountriesList.slice(startIndex, endIndex);
+    return list.slice(startIndex, endIndex);
   }
 
   const isFavorite = (country) => {
@@ -94,13 +131,14 @@ const Countries = () => {
     <Container fluid>
       <Row>
         <Col className="mt-5 d-flex justify-content-center">
-          <Form>
+          <Form onSubmit={(e) => e.preventDefault()}>
             <Form.Control
               style={{ width: '18rem' }}
               type="search"
               className="me-2 "
               placeholder="Search for countries"
               aria-label="Search"
+              value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </Form>
@@ -111,9 +149,7 @@ const Countries = () => {
         {/* {loading ? <Spinner animation="border" variant="success" /> : ""} */}
 
 
-        {pagedCountryList.filter((c) => {
-          return c.name.official.toLowerCase().includes(search.toLowerCase())
-        }).map((country, i) => <Col key={i} className="mt-5">
+        {pagedCountryList.map((country, i) => <Col key={i} className="mt-5">
           <LinkContainer
             to={`/countries/${country.name.common}`}
             state={{ country: country }}
